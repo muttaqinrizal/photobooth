@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #000000;
+  --color-foreground: #ffffff;
+  
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #000000;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  user-select: none;
+  cursor: none; /* Hide cursor for kiosk mode */
+  overflow: hidden;
+}
+
+/* Hide scrollbars */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Fix for full-height containers in Next.js */
+#root, [data-nextjs-scroll-focus-boundary] {
+  height: 100%;
+}

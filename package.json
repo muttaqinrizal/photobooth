@@ -1,0 +1,28 @@
+{
+  "name": "sony-zv-e10-photobooth",
+  "version": "1.0.0",
+  "description": "Photobooth application for Sony ZV-E10",
+  "main": "main.js",
+  "scripts": {
+    "start": "node server.js",
+    "server": "nodemon server.js",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "app": "concurrently \"npm run server\" \"npm run client\" \"wait-on http://localhost:3000 && electron .\""
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "fs-extra": "^11.2.0",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.33.3",
+    "socket.io": "^4.7.5",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "electron": "^41.6.1",
+    "nodemon": "^3.1.0",
+    "wait-on": "^9.0.10"
+  }
+}
