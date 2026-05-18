@@ -8,6 +8,7 @@ const fs = require('fs-extra');
 
 const cameraService = require('./services/cameraService');
 const imageProcessor = require('./services/imageProcessor');
+const storageService = require('./services/storageService');
 const QRCode = require('qrcode');
 const os = require('os');
 
@@ -83,8 +84,21 @@ io.on('connection', (socket) => {
       const filename = path.basename(readyPath);
       console.log('Processed:', readyPath);
 
-      // 3. Generate QR Code
-      const downloadUrl = `http://${LOCAL_IP}:${PORT}/download/${filename}`;
+      // 3. Cloud Storage Upload with Hybrid Fallback
+      let downloadUrl = `http://${LOCAL_IP}:${PORT}/download/${filename}`;
+      if (storageService.isEnabled()) {
+        try {
+          console.log(`Cloud storage is enabled. Uploading ${filename}...`);
+          socket.emit('photo:uploading');
+          const cloudUrl = await storageService.uploadFile(readyPath, filename);
+          downloadUrl = cloudUrl;
+          console.log('Upload success, URL:', downloadUrl);
+        } catch (uploadErr) {
+          console.error('Failed uploading photo to cloud. Falling back to local URL:', uploadErr.message);
+        }
+      }
+
+      // 4. Generate QR Code
       const qrCodeDataUrl = await QRCode.toDataURL(downloadUrl);
 
       // Return paths relative to static serve
@@ -114,7 +128,20 @@ io.on('connection', (socket) => {
       const finalPath = await imageProcessor.createLayout(fullPaths, layout);
       const filename = path.basename(finalPath);
       
-      const downloadUrl = `http://${LOCAL_IP}:${PORT}/download/${filename}`;
+      // Cloud Storage Upload with Hybrid Fallback
+      let downloadUrl = `http://${LOCAL_IP}:${PORT}/download/${filename}`;
+      if (storageService.isEnabled()) {
+        try {
+          console.log(`Cloud storage is enabled. Uploading final layout ${filename}...`);
+          socket.emit('photo:uploading');
+          const cloudUrl = await storageService.uploadFile(finalPath, filename);
+          downloadUrl = cloudUrl;
+          console.log('Upload success, URL:', downloadUrl);
+        } catch (uploadErr) {
+          console.error('Failed uploading final layout to cloud. Falling back to local URL:', uploadErr.message);
+        }
+      }
+
       const qrCodeDataUrl = await QRCode.toDataURL(downloadUrl);
 
       const result = {

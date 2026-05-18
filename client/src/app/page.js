@@ -299,7 +299,11 @@ export default function LandingPage() {
             <motion.div key="result" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative w-full h-full flex flex-col items-center justify-center p-16 gap-16 z-10 overflow-y-auto">
               <div className="flex-1 w-full max-w-5xl flex items-center justify-center">
                  <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative group rounded-[40px] overflow-hidden shadow-[0_0_120px_rgba(0,0,0,0.8)] border border-white/10 max-h-[70vh]">
-                    <img src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${finalResult.ready}`} alt="Final Layout" className="max-h-[70vh] w-auto object-contain" />
+                    <img 
+                      src={finalResult.ready.startsWith('http') ? finalResult.ready : `${process.env.NEXT_PUBLIC_BACKEND_URL}${finalResult.ready}`} 
+                      alt="Final Layout" 
+                      className="max-h-[70vh] w-auto object-contain" 
+                    />
                  </motion.div>
               </div>
               <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="flex items-center gap-20 p-12 bg-white/5 backdrop-blur-3xl rounded-[60px] border border-white/10">

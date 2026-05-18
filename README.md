@@ -8,7 +8,8 @@ Aplikasi Photobooth profesional yang dirancang khusus untuk kamera **Sony ZV-E10
 - **UI/UX Premium**: Antarmuka modern dengan tema *Glassmorphism* dan animasi *Framer Motion*.
 - **Integrasi Hardware**: Kontrol penuh kamera Sony ZV-E10 via USB menggunakan `gphoto2`.
 - **Pengolahan Gambar Instan**: Otomatis menempelkan frame/overlay ke foto menggunakan `sharp`.
-- **Berbagi via QR Code**: Pengunjung dapat scan QR Code untuk mengunduh foto langsung ke HP via WiFi lokal.
+- **Berbagi via QR & Cloud Storage**: Pengunjung dapat scan QR Code untuk mengunduh foto via internet seluler dengan integrasi cloud storage.
+- **Hybrid & Fallback Mechanism**: Jika koneksi cloud storage terganggu, QR Code otomatis beralih menggunakan server lokal agar sesi tetap aman.
 - **Mode Kiosk**: Berjalan full-screen tanpa border/taskbar (ideal untuk event publik).
 - **Auto IP Detection**: Otomatis mendeteksi IP lokal untuk kemudahan akses download.
 
@@ -20,6 +21,7 @@ Aplikasi Photobooth profesional yang dirancang khusus untuk kamera **Sony ZV-E10
 - **Desktop Shell**: Electron (Kiosk Mode).
 - **Image Processing**: Sharp.
 - **Camera Control**: GPhoto2 (CLI-based).
+- **Cloud Storage**: AWS SDK v3 (`@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`).
 
 ---
 
@@ -85,12 +87,34 @@ Anda dapat mengganti bingkai foto dengan desain Anda sendiri:
 
 ---
 
+## ☁️ Integrasi Cloud Storage (AWS S3 / Cloudflare R2)
+Aplikasi mendukung penyimpanan cloud untuk hasil foto akhir. Ini memungkinkan pengunjung mengunduh hasil foto dari jaringan data seluler mereka tanpa harus berada di jaringan WiFi lokal yang sama.
+
+Untuk mengaktifkannya, perbarui file `.env` di root folder:
+
+```ini
+CLOUD_STORAGE_ENABLED=true
+CLOUD_STORAGE_PROVIDER=r2          # 's3' atau 'r2'
+STORAGE_ACCESS_KEY_ID=your_id
+STORAGE_SECRET_ACCESS_KEY=your_secret
+STORAGE_BUCKET_NAME=your_bucket_name
+STORAGE_REGION=auto                # atau us-east-1 untuk AWS S3
+STORAGE_ENDPOINT=https://...       # Diperlukan untuk Cloudflare R2
+STORAGE_PUBLIC_URL=https://...     # Opsional: CDN kustom / domain R2 publik
+STORAGE_URL_EXPIRATION_SECONDS=86400 # Masa berlaku Pre-signed URL (24 jam)
+```
+
+Jika dinonaktifkan (`CLOUD_STORAGE_ENABLED=false`), tautan unduhan dan QR Code secara otomatis akan dialihkan kembali menggunakan IP lokal computer.
+
+---
+
 ## 📁 Struktur Folder
 - `main.js`: Logika utama Electron (Window management).
 - `server.js`: API Server & WebSocket hub.
 - `services/`:
   - `cameraService.js`: Modul komunikasi hardware kamera.
   - `imageProcessor.js`: Modul manipulasi gambar & overlay.
+  - `storageService.js`: Modul integrasi upload AWS S3 / Cloudflare R2.
 - `client/`: Source code Next.js (Frontend).
 - `photos/`: 
   - `raw/`: Foto asli dari kamera.
@@ -100,7 +124,9 @@ Anda dapat mengganti bingkai foto dengan desain Anda sendiri:
 
 ## ⚠️ Troubleshooting
 - **Kamera tidak terdeteksi**: Pastikan kabel USB terhubung dengan baik dan kamera dalam mode **PC Remote**. Coba jalankan `gphoto2 --auto-detect` di terminal.
-- **QR Code tidak bisa di-scan**: Pastikan HP pengunjung terhubung ke jaringan **WiFi yang sama** dengan PC Photobooth.
+- **QR Code tidak bisa di-scan**: 
+  - Jika Cloud Storage **dinonaktifkan** (atau internet putus): HP pengunjung wajib terhubung ke jaringan **WiFi lokal yang sama** dengan PC Photobooth.
+  - Jika Cloud Storage **diaktifkan**: Pastikan PC memiliki koneksi internet aktif untuk mengunggah foto ke R2/S3.
 - **Keluar dari Kiosk Mode**: Tekan `ALT + F4` atau `CTRL + C` di terminal tempat Anda menjalankan perintah.
 
 ---
